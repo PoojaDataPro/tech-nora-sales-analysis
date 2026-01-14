@@ -1,0 +1,41 @@
+import pandas as pd
+import numpy as np
+import os
+IN_FILE="../data/sales.analysis.py"
+df=pd.read_csv(IN_FILE)
+print(df.head())
+print("Before remove duplicates:",len(df))
+df=df.drop_duplicates()
+print("After removing exact duplicates:",len(df))
+df=df.drop_duplicates(subset=["Order_ID"],keep='first')
+print("After removing exact duplicate Order_ID:",len(df))
+print("Missing value in each column:")
+print(df.isnull().sum())
+df["Date"]=df["Date"].fillna("Unknown Date")
+df["Customer"]=df["Customer"].fillna("Unknown Customer")
+df["Quantity"]=df["Quantity"].fillna(0)
+df["Price"]=df["Price"].fillna(0)
+print("n/Missing values After Cleaning:")
+print(df.isnull().sum())
+df["Quantity"]=pd.to_numeric(df["Quantity"],errors="coerce")
+df["Price"]=pd.to_numeric(df["Price"],errors="coerce")
+df["Quantity"]=df["Quantity"].fillna(0)
+df["Price"]=df["Price"].fillna(0)
+df["Total_Sales"]=df["Quantity"]*df["Price"]
+print(df.head(5))
+customer_sales=df.groupby("Customer")["Total_Sales"].sum().sort_values(ascending=False)
+print("/nTotal Sales per Customer:")
+print(customer_sales)
+product_sales=df.groupby("Product")["Total_Sales"].sum().sort_values(ascending=False)
+print("/n Total Sales per product")
+print(product_sales)
+city_sales=df.groupby("City")["Total_Sales"].sum().sort_values(ascending=False)
+print("/n Total Sales per city")
+print(city_sales)
+os.makedirs("../output/report", exist_ok=True)
+
+customer_sales.to_csv("../output/report/customer_sales.csv")
+product_sales.to_csv("../output/report/product_sales.csv")
+city_sales.to_csv("../output/report/city_sales.csv")
+
+print("\nSummary reports saved in ../output/report/")
